@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+    <title>Muneeb Business | Pro POS</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --a: #3b82f6; --a-hov: #2563eb; --bg: #0f172a; --bg2: #1e293b; --cd: #1e293b;
+            --tx: #f8fafc; --tx2: #94a3b8; --br: rgba(255,255,255,0.1);
+            --g: #10b981; --r: #ef4444; --header-grad: linear-gradient(135deg, #1e293b, #0f172a);
+        }
+        [data-theme="light"] {
+            --a: #2563eb; --a-hov: #1d4ed8; --bg: #f1f5f9; --bg2: #ffffff; --cd: #ffffff;
+            --tx: #0f172a; --tx2: #64748b; --br: rgba(0,0,0,0.1);
+            --header-grad: linear-gradient(135deg, #ffffff, #f1f5f9);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background 0.3s ease, color 0.2s; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx); font-size: 13px; line-height: 1.6; }
+        .hdr { background: var(--header-grad); border-bottom: 1px solid var(--br); padding: 12px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .theme-toggle { width: 40px; height: 40px; background: var(--bg); border: 1px solid var(--br); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; }
+        .ht { flex: 1; }
+        .ht h1 { font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
+        .ht p { font-size: 10px; color: var(--tx2); font-weight: 600; }
+        .nav { display: flex; background: var(--bg2); border-bottom: 1px solid var(--br); overflow-x: auto; position: sticky; top: 65px; z-index: 999; }
+        .nb { flex: 1; min-width: 90px; padding: 14px 5px; background: none; border: none; color: var(--tx2); font-weight: 700; cursor: pointer; border-bottom: 3px solid transparent; font-size: 11px; text-transform: uppercase; }
+        .nb.on { color: var(--a); border-bottom-color: var(--a); background: rgba(59, 130, 246, 0.05); }
+        .wp { padding: 15px; max-width: 850px; margin: 0 auto; }
+        .tab { display: none; } .tab.on { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
+        .card { background: var(--cd); border: 1px solid var(--br); border-radius: 16px; padding: 18px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .ct { font-size: 12px; font-weight: 700; color: var(--a); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+        .fg { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .fw { grid-column: 1 / -1; }
+        label { display: block; font-size: 11px; font-weight: 700; color: var(--tx2); margin-bottom: 5px; }
+        input, select, textarea { width: 100%; padding: 11px 14px; background: var(--bg); border: 1px solid var(--br); border-radius: 10px; color: var(--tx); font-size: 13px; outline: none; }
+        .btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 13px; width: 100%; }
+        .bp { background: var(--a); color: #fff; }
+        .bs { background: var(--g); color: #fff; }
+        .br2 { background: rgba(239, 68, 68, 0.1); color: var(--r); border: 1px solid var(--r); }
+        .wa-btn { background: #25D366; color: #fff; padding: 6px 12px; font-size: 11px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+        .list-item { padding: 12px; border-bottom: 1px solid var(--br); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1e293b; color: #fff; padding: 12px 24px; border-radius: 50px; z-index: 10000; transition: 0.4s; border: 1px solid var(--a); }
+        .toast.on { transform: translateX(-50%) translateY(0); }
+
+        /* ===== PROFESSIONAL PRINTABLE INVOICE ===== */
+
+#invoice-wrapper{
+    position: fixed;
+    top: -10000px;
+    left: -10000px;
+    width: 210mm;
+    background: white;
+    z-index: -1;
+}
+
+#invoice-template{
+    width: 190mm;
+    min-height: 297mm;
+    padding: 15mm;
+    background: #fff;
+    color: #000;
+    font-family: Arial, sans-serif;
+}
+
+.inv-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    border-bottom:3px solid #2563eb;
+    padding-bottom:15px;
+    margin-bottom:20px;
+}
+
+.inv-company h1{
+    font-size:30px;
+    color:#2563eb;
+    margin-bottom:6px;
+}
+
+.inv-company p{
+    font-size:13px;
+    color:#444;
+    margin:2px 0;
+}
+
+.inv-meta{
+    text-align:right;
+}
+
+.inv-meta h2{
+    font-size:34px;
+    margin-bottom:10px;
+    color:#111827;
+}
+
+.inv-meta p{
+    font-size:13px;
+    margin:4px 0;
+}
+
+.inv-section{
+    margin-bottom:20px;
+}
+
+.inv-section h3{
+    font-size:13px;
+    color:#2563eb;
+    margin-bottom:8px;
+    text-transform:uppercase;
+}
+
+.inv-section p{
+    margin:3px 0;
+    font-size:14px;
+}
+
+.inv-table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+.inv-table th{
+    background:#2563eb;
+    color:white;
+    padding:12px;
+    border:1px solid #d1d5db;
+    font-size:13px;
+    text-align:left;
+}
+
+.inv-table td{
+    border:1px solid #d1d5db;
+    padding:12px;
+    font-size:13px;
+}
+
+.inv-table tr:nth-child(even){
+    background:#f9fafb;
+}
+
+.inv-total{
+    margin-top:20px;
+    width:300px;
+    margin-left:auto;
+}
+
+.inv-total table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.inv-total td{
+    border:1px solid #d1d5db;
+    padding:10px;
+    font-size:14px;
+}
+
+.inv-grand{
+    background:#2563eb;
+    color:white;
+    font-weight:bold;
+    font-size:16px;
+}
+
+.inv-footer{
+    margin-top:40px;
+    text-align:center;
+    font-size:12px;
+    color:#666;
+    border-top:1px dashed #ccc;
+    padding-top:15px;
+}
+    </style>
+</head>
+<body data-theme="dark">
+
+<div id="invoice-wrapper">
+    <div id="invoice-template">
+
+        <div class="inv-head">
+
+            <div class="inv-company">
+                <h1 id="inv-biz-name"></h1>
+                <p id="inv-biz-addr"></p>
+                <p id="inv-biz-phone"></p>
+            </div>
+
+            <div class="inv-meta">
+                <h2>INVOICE</h2>
+
+                <p>
+                    <strong>Invoice #:</strong>
+                    <span id="inv-id"></span>
+                </p>
+
+                <p>
+                    <strong>Date:</strong>
+                    <span id="inv-date"></span>
+                </p>
+
+                <p>
+                    <strong>Day:</strong>
+                    <span id="inv-day"></span>
+                </p>
+            </div>
+
+        </div>
+
+        <div class="inv-section">
+            <h3>Customer Details</h3>
+
+            <p><strong>Name:</strong> <span id="inv-cust-name"></span></p>
+            <p><strong>Phone:</strong> <span id="inv-cust-phone"></span></p>
+            <p><strong>Address:</strong> <span id="inv-cust-addr"></span></p>
+        </div>
+
+        <table class="inv-table">
+
+            <thead>
+                <tr>
+                    <th>Order Details</th>
+                    <th>Qty</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+
+            <tbody id="inv-items"></tbody>
+
+        </table>
+
+        <div class="inv-total">
+
+            <table>
+
+                <tr>
+                    <td><strong>Subtotal</strong></td>
+                    <td id="inv-subtotal"></td>
+                </tr>
+
+                <tr>
+                    <td><strong>Delivery</strong></td>
+                    <td>0</td>
+                </tr>
+
+                <tr class="inv-grand">
+                    <td>TOTAL</td>
+                    <td id="inv-total"></td>
+                </tr>
+
+            </table>
+
+        </div>
+
+        <div class="inv-footer">
+            Thank you for your order.
+            Please check parcel contents before accepting delivery.
+        </div>
+
+    </div>
+</div>
+
+<div class="hdr">
+    <div class="theme-toggle" id="theme-btn" onclick="toggleTheme()">🌙</div>
+    <div class="ht">
+        <h1 id="disp-biz-name">Muneeb Business</h1>
+        <p id="disp-exchange">1 USD = 278 PKR</p>
+    </div>
+    <button class="btn bp" style="width:auto; padding:8px 15px; height:35px" onclick="manualSync()">☁️ Sync</button>
+</div>
+
+<nav class="nav">
+    <button class="nb on" onclick="sw('reports', this)">Reports</button>
+    <button class="nb" onclick="sw('orders', this)">Orders</button>
+    <button class="nb" onclick="sw('customers', this)">Customers</button>
+    <button class="nb" onclick="sw('products', this)">Products</button>
+    <button class="nb" onclick="sw('stock', this)">Stock</button>
+    <button class="nb" onclick="sw('settings', this)">Settings</button>
+</nav>
+
+<div class="wp">
+    <div class="tab on" id="tab-reports">
+        <div id="print-area">
+            <div class="fg" style="margin-bottom:15px">
+                <div class="card" style="margin:0; text-align:center">
+                    <div class="ct" style="justify-content:center">Total Orders</div>
+                    <div id="stat-orders" style="font-size:26px; font-weight:800">0</div>
+                </div>
+                <div class="card" style="margin:0; text-align:center">
+                    <div class="ct" style="justify-content:center">Net Profit</div>
+                    <div id="stat-profit" style="font-size:26px; font-weight:800; color:var(--g)">0</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="ct">📈 Profit Analytics</div>
+                <canvas id="profitChart" height="160"></canvas>
+            </div>
+        </div>
+        <button class="btn bp" onclick="savePDF()">📄 Download PDF Report</button>
+    </div>
+
+    <div class="tab" id="tab-orders">
+        <div class="card">
+            <div class="ct">🛒 New Order</div>
+            <div class="fg">
+                <div class="fw"><label>Customer Name</label><input id="o-name"></div>
+                <div><label>Phone Number</label><input id="o-phone" type="tel"></div>
+                <div><label>Product</label><select id="o-prod-sel" onchange="calcOrder()"></select></div>
+                <div class="fw"><label>Address</label><input id="o-address"></div>
+                <div><label>Quantity</label><input id="o-qty" type="number" value="1" oninput="calcOrder()"></div>
+                <div><label>Total Bill (PKR)</label><input id="o-total-bill" readonly style="font-weight:700; color:var(--a)"></div>
+                <div><label>Profit Preview (PKR)</label><input id="o-profit" readonly style="font-weight:700; color:var(--g)"></div>
+                <div class="fw"><label>Note</label><input id="o-note" placeholder="Extra instructions for packing..."></div>
+                <div class="fw"><button class="btn bp" onclick="placeOrder()">✅ Save & Sync Order</button></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="ct">📜 Order History</div>
+            <div id="order-list"></div>
+        </div>
+    </div>
+
+    <div class="tab" id="tab-customers">
+        <div class="card">
+            <div class="ct">👥 Customer List</div>
+            <div id="customer-list"></div>
+        </div>
+    </div>
+
+    <div class="tab" id="tab-products">
+        <div class="card">
+            <div class="ct">🏷️ Add Product</div>
+            <div class="fg">
+                <div class="fw"><label>Product Name</label><input id="p-name"></div>
+                <div><label>Cost</label><input id="p-cost" type="number"></div>
+                <div><label>Sale</label><input id="p-sale" type="number"></div>
+                <div class="fw"><button class="btn bp" onclick="addProduct()">➕ Add Product</button></div>
+            </div>
+        </div>
+        <div class="card"><div class="ct">🏷️ Inventory</div><div id="product-list"></div></div>
+    </div>
+
+    <div class="tab" id="tab-stock">
+        <div class="card">
+            <div class="ct">📦 Update Stock</div>
+            <div class="fg">
+                <div class="fw"><label>Product</label><select id="s-prod-sel"></select></div>
+                <div><label>Qty to Add</label><input id="s-qty" type="number"></div>
+                <div><label>Alert Level</label><input id="s-alert" type="number" value="5"></div>
+                <div class="fw"><button class="btn bp" onclick="updateStock()">💾 Save Stock</button></div>
+            </div>
+        </div>
+        <div id="stock-list"></div>
+    </div>
+
+    <div class="tab" id="tab-settings">
+        <div class="card">
+            <div class="ct">⚙️ Settings</div>
+            <div class="fg">
+                <div class="fw"><label>Shop Name</label><input id="set-biz-name"></div>
+                <div class="fw"><label>Shop Address</label><input id="set-biz-addr" placeholder="Store location"></div>
+                <div><label>Shop Contact</label><input id="set-biz-phone" placeholder="03XXXXXXXXX"></div>
+                <div><label>Exchange Rate (USD-PKR)</label><input id="set-usd" type="number"></div>
+                <div class="fw"><label>Google Script URL</label><input id="set-sheet-url"></div>
+                <div class="fw"><button class="btn bp" onclick="saveSettings()">💾 Save Settings</button></div>
+            </div>
+        </div>
+        <button class="btn br2" onclick="wipeData()">🗑️ Reset App</button>
+    </div>
+</div>
+
+<div class="toast" id="toast">Saved!</div>
+
+<script>
+async function syncEverythingFromCloud() {
+    if(!db.settings.sheetUrl) return;
+    showToast("Syncing with Cloud...");
+
+    try {
+        const res = await fetch(db.settings.sheetUrl);
+        const cloudData = await res.json();
+
+        if(cloudData.products) db.products = cloudData.products;
+        if(cloudData.orders) db.orders = cloudData.orders;
+        
+        // Rebuild customer list from orders
+        db.customers = [];
+        db.orders.forEach(ord => {
+            if(!db.customers.find(c => c.phone === ord.phone)) {
+                db.customers.push({name: ord.name, phone: ord.phone, addr: ord.address});
+            }
+        });
+
+        localStorage.setItem('muneeb_pos_v2', JSON.stringify(db));
+        updateUI();
+        showToast("All Data Synced!");
+    } catch(err) {
+        console.log("Sync Error:", err);
+        showToast("Cloud Sync Failed");
+    }
+}
+    let db = JSON.parse(localStorage.getItem('muneeb_pos_v2')) || {
+        orders: [], products: [], customers: [],
+        settings: { theme: 'dark', bizName: 'Muneeb Business', bizAddr: '', bizPhone: '', usd: 278, sheetUrl: '' }
+    };
+
+    function save() { localStorage.setItem('muneeb_pos_v2', JSON.stringify(db)); updateUI(); }
+
+    function toggleTheme() {
+        const t = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', t);
+        document.getElementById('theme-btn').innerText = t === 'dark' ? '🌙' : '☀️';
+        db.settings.theme = t; save();
+    }
+
+    function sw(id, el) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+        document.querySelectorAll('.nb').forEach(n => n.classList.remove('on'));
+        document.getElementById('tab-' + id).classList.add('on');
+        el.classList.add('on');
+        if(id === 'reports') initChart();
+    }
+
+    function calcOrder() {
+        const p = db.products.find(x => x.id == document.getElementById('o-prod-sel').value);
+        const q = parseFloat(document.getElementById('o-qty').value) || 0;
+        if(p) {
+            document.getElementById('o-total-bill').value = (p.sale * q).toFixed(0);
+            document.getElementById('o-profit').value = ((p.sale - p.cost) * q).toFixed(0);
+        }
+    }
+
+    function placeOrder() {
+        const p = db.products.find(x => x.id == document.getElementById('o-prod-sel').value);
+        const q = parseFloat(document.getElementById('o-qty').value);
+        if(!p || !q || p.qty < q) return alert("Error: Check stock/details");
+
+        const ord = {
+            id: "INV-" + (Math.floor(Math.random()*90000)+10000),
+            date: new Date().toLocaleDateString('en-GB'),
+            day: new Date().toLocaleDateString('en-US', {weekday: 'long'}),
+            name: document.getElementById('o-name').value || "Walk-in Customer",
+            phone: document.getElementById('o-phone').value || "N/A",
+            address: document.getElementById('o-address').value || "N/A",
+            product: p.name,
+            price: p.sale,
+            qty: q,
+            totalRevenue: p.sale * q,
+            totalProfit: (p.sale - p.cost) * q,
+            note: document.getElementById('o-note').value
+        };
+
+        db.orders.push(ord);
+        p.qty -= q;
+        if(!db.customers.find(c => c.phone === ord.phone)) db.customers.push({name: ord.name, phone: ord.phone, addr: ord.address});
+        save();
+        if (db.settings.sheetUrl) {
+    ord.action = "placeOrder"; // Explicitly tell the script this is an order
+    syncToCloud(ord);
+}
+        showToast("Order Placed!");
+    }
+
+    // --- WORKING PRINT INVOICE LOGIC ---
+    function printInvoice(idx){
+
+    const o = db.orders[idx];
+
+    document.getElementById('inv-biz-name').innerText =
+        db.settings.bizName || "Business";
+
+    document.getElementById('inv-biz-addr').innerText =
+        db.settings.bizAddr || "";
+
+    document.getElementById('inv-biz-phone').innerText =
+        db.settings.bizPhone || "";
+
+    document.getElementById('inv-id').innerText = o.id;
+
+    document.getElementById('inv-date').innerText = o.date;
+
+    document.getElementById('inv-day').innerText = o.day;
+
+    document.getElementById('inv-cust-name').innerText = o.name;
+
+    document.getElementById('inv-cust-phone').innerText = o.phone;
+
+    document.getElementById('inv-cust-addr').innerText = o.address;
+
+    document.getElementById('inv-subtotal').innerText =
+        "PKR " + Number(o.totalRevenue).toLocaleString();
+
+    document.getElementById('inv-total').innerText =
+        "PKR " + Number(o.totalRevenue).toLocaleString();
+
+    document.getElementById('inv-items').innerHTML = `
+        <tr>
+            <td>
+                <strong>${o.product}</strong>
+                <br>
+                <small>${o.note || ''}</small>
+            </td>
+
+            <td>${o.qty}</td>
+
+            <td>
+                PKR ${Number(o.price).toLocaleString()}
+            </td>
+
+            <td>
+                PKR ${Number(o.totalRevenue).toLocaleString()}
+            </td>
+        </tr>
+    `;
+
+    const invoice = document.getElementById('invoice-template');
+
+    const options = {
+
+        margin: 0,
+
+        filename: `${o.id}.pdf`,
+
+        image: {
+            type: 'jpeg',
+            quality: 1
+        },
+
+        html2canvas: {
+            scale: 4,
+            useCORS: true,
+            logging: false
+        },
+
+        jsPDF: {
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'portrait'
+        }
+
+    };
+
+    showToast("Generating Invoice PDF...");
+
+    setTimeout(() => {
+
+        html2pdf()
+            .set(options)
+            .from(invoice)
+            .save()
+            .then(() => {
+                showToast("Invoice Downloaded!");
+            });
+
+    }, 300);
+}
+
+    function updateUI() {
+        document.getElementById('disp-biz-name').innerText = db.settings.bizName;
+        document.getElementById('disp-exchange').innerText = `1 USD = ${db.settings.usd} PKR`;
+        document.getElementById('o-prod-sel').innerHTML = db.products.map(p => `<option value="${p.id}">${p.name} (Stk: ${p.qty})</option>`).join('');
+        document.getElementById('s-prod-sel').innerHTML = document.getElementById('o-prod-sel').innerHTML;
+        document.getElementById('stat-orders').innerText = db.orders.length;
+        document.getElementById('stat-profit').innerText = "Rs. " + db.orders.reduce((a,b)=>a+b.totalProfit,0).toLocaleString();
+        
+        document.getElementById('order-list').innerHTML = db.orders.map((o,i) => `
+            <div class="list-item">
+                <div><b>${o.name}</b><br><small>${o.product} (x${o.qty})</small></div>
+                <div style="text-align:right">
+                    <p style="color:var(--a);font-weight:700">Rs. ${o.totalRevenue}</p>
+                    <button class="btn bp" style="padding:4px 10px; font-size:10px; height:auto; width:auto; display:inline-block" onclick="printInvoice(${i})">🧾 Print Invoice</button>
+                </div>
+            </div>
+        `).reverse().join('');
+
+        document.getElementById('customer-list').innerHTML = db.customers.map(c => `
+            <div class="list-item">
+                <div><b>${c.name}</b><br><small>${c.phone}</small></div>
+                <a href="https://wa.me/${c.phone.replace(/[^0-9]/g,'')}" target="_blank" class="wa-btn">💬 WhatsApp</a>
+            </div>
+        `).join('');
+        
+        document.getElementById('product-list').innerHTML = db.products.map(p => `<div class="list-item"><span>${p.name}</span><b>Rs. ${p.sale}</b></div>`).join('');
+        document.getElementById('stock-list').innerHTML = db.products.map(p => `<div class="list-item"><span>${p.name}</span><b style="color:${p.qty<=p.alert?'var(--r)':'var(--g)'}">${p.qty}</b></div>`).join('');
+    }
+
+    async function addProduct() {
+
+    const n = document.getElementById('p-name').value;
+    const c = parseFloat(document.getElementById('p-cost').value);
+    const s = parseFloat(document.getElementById('p-sale').value);
+
+    if(!n || isNaN(c)) return alert("Fill details");
+
+    const product = {
+        action: "addProduct",
+        id: Date.now(),
+        name: n,
+        cost: c,
+        sale: s,
+        qty: 0,
+        alert: 5
+    };
+
+    try {
+
+        await fetch(db.settings.sheetUrl, {
+            method: 'POST',
+            body: JSON.stringify(product)
+        });
+
+        db.products.push(product);
+
+        save();
+
+        showToast("Product Synced!");
+
+    } catch(err) {
+
+        alert("Sync failed");
+
+    }
+}
+
+    async function updateStock() {
+
+    const p = db.products.find(
+        x => x.id == document.getElementById('s-prod-sel').value
+    );
+
+    if(!p) return;
+
+    p.qty += parseFloat(document.getElementById('s-qty').value) || 0;
+
+    p.alert = parseFloat(
+        document.getElementById('s-alert').value
+    ) || 5;
+
+    try {
+
+        await fetch(db.settings.sheetUrl, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: "updateStock",
+                id: p.id,
+                qty: p.qty,
+                alert: p.alert
+            })
+        });
+
+        save();
+
+        showToast("Stock Synced!");
+
+    } catch(err) {
+
+        alert("Stock sync failed");
+
+    }
+}
+
+    function saveSettings() {
+        db.settings.bizName = document.getElementById('set-biz-name').value;
+        db.settings.bizAddr = document.getElementById('set-biz-addr').value;
+        db.settings.bizPhone = document.getElementById('set-biz-phone').value;
+        db.settings.usd = document.getElementById('set-usd').value;
+        db.settings.sheetUrl = document.getElementById('set-sheet-url').value;
+        save(); showToast("Settings Saved!");
+    }
+
+    async function syncToCloud(d) { try { await fetch(db.settings.sheetUrl,{method:'POST',mode:'no-cors',body:JSON.stringify(d)}); } catch(e){} }
+    function manualSync() { db.orders.forEach(o => syncToCloud(o)); showToast("Syncing..."); }
+    function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),2000); }
+    function savePDF() { html2pdf().from(document.getElementById('print-area')).save('Report.pdf'); }
+
+    window.onload = async () => {
+    document.body.setAttribute('data-theme', db.settings.theme);
+    document.getElementById('set-biz-name').value = db.settings.bizName;
+    document.getElementById('set-biz-addr').value = db.settings.bizAddr;
+    document.getElementById('set-biz-phone').value = db.settings.bizPhone;
+    document.getElementById('set-usd').value = db.settings.usd;
+    document.getElementById('set-sheet-url').value = db.settings.sheetUrl;
+
+    await syncEverythingFromCloud();
+};
+
+    let chartObj = null;
+    function initChart() {
+        const ctx = document.getElementById('profitChart').getContext('2d');
+        if(chartObj) chartObj.destroy();
+        chartObj = new Chart(ctx, {
+            type: 'line',
+            data: { labels: db.orders.slice(-7).map(o=>o.id), datasets: [{label:'Profit', data: db.orders.slice(-7).map(o=>o.totalProfit), borderColor:'#3b82f6', fill:true, backgroundColor:'rgba(59,130,246,0.1)'}] },
+            options: { plugins: { legend: { display: false } } }
+        });
+    }
+
+    function wipeData() { if(confirm("Delete all data? This cannot be undone.")) { localStorage.clear(); location.reload(); } }
+
+</script>
+</body>
+</html>
