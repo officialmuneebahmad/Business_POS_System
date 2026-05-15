@@ -1157,6 +1157,16 @@ function updateUI(){
         </div>
     `).join('');
 
+    // Update Products List
+    document.getElementById('products-list').innerHTML= [...db.products].reverse().map((o)=>`
+        <div class="item">
+            <div><b>${o.name}</b><div class="small" style="padding:5px 0px;">COST PRICE: Rs. ${o.cost}</div></div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <b>Rs. ${o.sale}</b>
+            </div>
+        </div>
+    `).join('');
+
     // Update Customers List (Optimized)
     const customerListEl = document.getElementById('customers-list');
     
