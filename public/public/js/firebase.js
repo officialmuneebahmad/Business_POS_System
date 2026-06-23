@@ -1,5 +1,5 @@
 const firebaseConfig = {
-  apiKey: "AIzaSyB" + "RzzVxMGEH0mMwzrDXvCjmdEtoqJmxJ8I",
+  apiKey: "PUT_YOUR_FIREBASE_API_KEY_HERE",
   authDomain: "pos-system-ebcf4.firebaseapp.com",
   projectId: "pos-system-ebcf4",
   storageBucket: "pos-system-ebcf4.firebasestorage.app",
